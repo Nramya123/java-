@@ -1,0 +1,464 @@
+import java.util.*;
+import java.io.Console;
+
+class Employee {
+    int id;
+    String name;
+    String password;
+    int leaveBalance;
+    int leaveCount;
+    ArrayList<String> attendance;
+
+    Employee(int id, String name, String password, int leaveBalance) {
+        this.id = id;
+        this.name = name;
+        this.password = password;
+        this.leaveBalance = leaveBalance;
+        this.leaveCount = 0;
+        this.attendance = new ArrayList<>();
+    }
+}
+
+class Admin {
+    String email;
+    String password;
+
+    Admin(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
+}
+
+class LeaveRequest {
+    int employeeId;
+    String employeeName;
+    String startDate;
+    String endDate;
+    String reason;
+    int days;
+    String status;
+
+    LeaveRequest(int employeeId, String employeeName, String startDate, String endDate, String reason, int days) {
+        this.employeeId = employeeId;
+        this.employeeName = employeeName;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.reason = reason;
+        this.days = days;
+        this.status = "Pending";
+    }
+}
+
+public class EmployeeLeaveManagementSystem {
+
+    static Scanner sc = new Scanner(System.in);
+    static ArrayList<Employee> employees = new ArrayList<>();
+    static ArrayList<Admin> admins = new ArrayList<>();
+    static ArrayList<LeaveRequest> leaveRequests = new ArrayList<>();
+
+    public static void main(String[] args) {
+
+        while (true) {
+            System.out.println("\n=================================");
+            System.out.println("EMPLOYEE LEAVE MANAGEMENT SYSTEM");
+            System.out.println("=================================");
+            System.out.println("1. Admin Register");
+            System.out.println("2. Admin Login");
+            System.out.println("3. Employee Register");
+            System.out.println("4. Employee Login");
+            System.out.println("5. Exit");
+            System.out.print("Enter choice: ");
+
+            int choice = sc.nextInt();
+
+            switch (choice) {
+                case 1:
+                    registerAdmin();
+                    break;
+                case 2:
+                    adminLogin();
+                    break;
+                case 3:
+                    registerEmployee();
+                    break;
+                case 4:
+                    employeeLogin();
+                    break;
+                case 5:
+                    System.out.println("Exiting...");
+                    System.exit(0);
+                default:
+                    System.out.println("Invalid choice!");
+            }
+        }
+    }
+
+    // ================= PASSWORD INPUT =================
+    static String inputPassword(String message) {
+        Console console = System.console();
+        if (console != null) {
+            char[] passwordChars = console.readPassword(message);
+            return new String(passwordChars);
+        } else {
+            // fallback for IDEs where console is not available
+            System.out.print(message);
+            return sc.nextLine();
+        }
+    }
+
+    // ================= REGISTER ADMIN =================
+    static void registerAdmin() {
+        sc.nextLine();
+        System.out.print("Enter Email: ");
+        String email = sc.nextLine();
+        String pass = inputPassword("Enter Password: ");
+
+        admins.add(new Admin(email, pass));
+        System.out.println("Admin Registered Successfully!");
+    }
+
+    // ================= ADMIN LOGIN =================
+    static void adminLogin() {
+        sc.nextLine();
+        System.out.print("Enter Email: ");
+        String email = sc.nextLine();
+        String pass = inputPassword("Enter Password: ");
+
+        for (Admin ad : admins) {
+            if (ad.email.equals(email) && ad.password.equals(pass)) {
+                System.out.println("Login Successful!");
+                adminMenu();
+                return;
+            }
+        }
+        System.out.println("Invalid Credentials!");
+    }
+
+    // ================= REGISTER EMPLOYEE =================
+    static void registerEmployee() {
+        System.out.print("Enter Employee ID: ");
+        int id = sc.nextInt();
+        sc.nextLine();
+
+        for (Employee emp : employees) {
+            if (emp.id == id) {
+                System.out.println("Employee ID already exists!");
+                return;
+            }
+        }
+
+        System.out.print("Enter Name: ");
+        String name = sc.nextLine();
+        String pass = inputPassword("Enter Password: ");
+
+        employees.add(new Employee(id, name, pass, 20));
+        System.out.println("Employee Registered Successfully!");
+    }
+
+    // ================= EMPLOYEE LOGIN =================
+    static void employeeLogin() {
+        System.out.print("Enter Employee ID: ");
+        int id = sc.nextInt();
+        sc.nextLine();
+        String pass = inputPassword("Enter Password: ");
+
+        for (Employee emp : employees) {
+            if (emp.id == id && emp.password.equals(pass)) {
+                System.out.println("Login Successful! Welcome " + emp.name);
+                employeeMenu(emp);
+                return;
+            }
+        }
+        System.out.println("Invalid Credentials!");
+    }
+
+    // ================= ADMIN MENU =================
+    static void adminMenu() {
+        while (true) {
+            System.out.println("\n--- ADMIN DASHBOARD ---");
+            System.out.println("1. View All Leave Requests");
+            System.out.println("2. Approve Leave");
+            System.out.println("3. Reject Leave");
+            System.out.println("4. View Employees Leave Report");
+            System.out.println("5. View Employees Attendance Report");
+            System.out.println("6. Logout");
+            System.out.print("Enter choice: ");
+
+            int choice = sc.nextInt();
+
+            switch (choice) {
+                case 1:
+                    viewAllHistory();
+                    break;
+                case 2:
+                    updateLeaveStatus("Approved");
+                    break;
+                case 3:
+                    updateLeaveStatus("Rejected");
+                    break;
+                case 4:
+                    employeeLeaveReport();
+                    break;
+                case 5:
+                    attendanceReport();
+                    break;
+                case 6:
+                    return;
+                default:
+                    System.out.println("Invalid choice!");
+            }
+        }
+    }
+
+    // ================= EMPLOYEE MENU =================
+    static void employeeMenu(Employee emp) {
+        while (true) {
+            System.out.println("\n--- EMPLOYEE DASHBOARD ---");
+            System.out.println("1. Apply Leave");
+            System.out.println("2. View My Leave History");
+            System.out.println("3. Check Leave Balance");
+            System.out.println("4. Mark Attendance");
+            System.out.println("5. View My Attendance");
+            System.out.println("6. View My Leave Count");
+            System.out.println("7. Logout");
+            System.out.print("Enter choice: ");
+
+            int choice = sc.nextInt();
+
+            switch (choice) {
+                case 1:
+                    applyLeave(emp);
+                    break;
+                case 2:
+                    viewEmployeeHistory(emp.id);
+                    break;
+                case 3:
+                    System.out.println("Leave Balance: " + emp.leaveBalance + " days");
+                    break;
+                case 4:
+                    markAttendance(emp);
+                    break;
+                case 5:
+                    viewMyAttendance(emp);
+                    break;
+                case 6:
+                    System.out.println("Total Approved Leaves Count: " + emp.leaveCount);
+                    break;
+                case 7:
+                    return;
+                default:
+                    System.out.println("Invalid choice!");
+            }
+        }
+    }
+
+    // ================= APPLY LEAVE =================
+    static void applyLeave(Employee emp) {
+        sc.nextLine();
+        System.out.print("Enter Start Date: ");
+        String start = sc.nextLine();
+        System.out.print("Enter End Date: ");
+        String end = sc.nextLine();
+        System.out.print("Enter Reason: ");
+        String reason = sc.nextLine();
+        System.out.print("Enter Number of Leave Days: ");
+        int days = sc.nextInt();
+
+        if (days <= 0) {
+            System.out.println("Invalid leave days!");
+            return;
+        }
+
+        leaveRequests.add(new LeaveRequest(emp.id, emp.name, start, end, reason, days));
+        System.out.println("Leave Request Submitted Successfully!");
+    }
+
+    // ================= UPDATE LEAVE STATUS =================
+    static void updateLeaveStatus(String status) {
+        viewAllHistory();
+        System.out.print("Enter request index: ");
+        int index = sc.nextInt();
+
+        if (index >= 0 && index < leaveRequests.size()) {
+            LeaveRequest lr = leaveRequests.get(index);
+
+            if (!lr.status.equals("Pending")) {
+                System.out.println("This request is already " + lr.status);
+                return;
+            }
+
+            Employee emp = findEmployeeById(lr.employeeId);
+
+            if (emp != null) {
+                System.out.println("Employee Name: " + emp.name);
+                System.out.println("Current Leave Balance: " + emp.leaveBalance + " days");
+                System.out.println("Requested Leave Days: " + lr.days);
+
+                if (status.equals("Approved")) {
+                    if (emp.leaveBalance >= lr.days) {
+                        emp.leaveBalance -= lr.days;
+                        emp.leaveCount += lr.days;
+                        lr.status = "Approved";
+                        System.out.println("Leave Approved Successfully!");
+                        System.out.println("Updated Leave Balance: " + emp.leaveBalance + " days");
+                    } else {
+                        System.out.println("Insufficient leave balance! Cannot approve.");
+                    }
+                } else if (status.equals("Rejected")) {
+                    lr.status = "Rejected";
+                    System.out.println("Leave Rejected Successfully!");
+                }
+            }
+        } else {
+            System.out.println("Invalid Index!");
+        }
+    }
+
+    // ================= VIEW ALL LEAVE REQUESTS =================
+    static void viewAllHistory() {
+        if (leaveRequests.isEmpty()) {
+            System.out.println("No leave requests found.");
+            return;
+        }
+
+        for (int i = 0; i < leaveRequests.size(); i++) {
+            LeaveRequest lr = leaveRequests.get(i);
+            System.out.println(i + ". " + lr.employeeName + " | " +
+                    lr.startDate + " to " + lr.endDate +
+                    " | Days: " + lr.days +
+                    " | Reason: " + lr.reason +
+                    " | Status: " + lr.status);
+        }
+    }
+
+    // ================= VIEW EMPLOYEE LEAVE HISTORY =================
+    static void viewEmployeeHistory(int empId) {
+        boolean found = false;
+        for (LeaveRequest lr : leaveRequests) {
+            if (lr.employeeId == empId) {
+                System.out.println(lr.startDate + " to " + lr.endDate +
+                        " | Days: " + lr.days +
+                        " | Reason: " + lr.reason +
+                        " | Status: " + lr.status);
+                found = true;
+            }
+        }
+        if (!found) {
+            System.out.println("No leave history found.");
+        }
+    }
+
+    // ================= MARK ATTENDANCE =================
+    static void markAttendance(Employee emp) {
+        sc.nextLine();
+        System.out.print("Enter Date (dd-mm-yyyy): ");
+        String date = sc.nextLine();
+
+        if (emp.attendance.contains(date)) {
+            System.out.println("Attendance already marked for this date.");
+        } else {
+            emp.attendance.add(date);
+            System.out.println("Attendance marked successfully for " + date);
+        }
+    }
+
+    // ================= VIEW MY ATTENDANCE =================
+    static void viewMyAttendance(Employee emp) {
+        if (emp.attendance.isEmpty()) {
+            System.out.println("No attendance marked yet.");
+            return;
+        }
+
+        System.out.println("Attendance Record:");
+        for (String date : emp.attendance) {
+            System.out.println(date + " - Present");
+        }
+    }
+
+    // ================= EMPLOYEE LEAVE REPORT =================
+    static void employeeLeaveReport() {
+        if (employees.isEmpty()) {
+            System.out.println("No employees registered.");
+            return;
+        }
+
+        System.out.println("\n--- EMPLOYEE LEAVE REPORT ---");
+        for (Employee emp : employees) {
+            System.out.println("Employee ID: " + emp.id);
+            System.out.println("Name: " + emp.name);
+            System.out.println("Leave Balance: " + emp.leaveBalance);
+            System.out.println("Approved Leave Count: " + emp.leaveCount);
+            System.out.println("---------------------------");
+        }
+    }
+
+    // ================= ATTENDANCE REPORT =================
+    static void attendanceReport() {
+        if (employees.isEmpty()) {
+            System.out.println("No employees registered.");
+            return;
+        }
+
+        System.out.println("\n--- EMPLOYEE ATTENDANCE REPORT ---");
+        for (Employee emp : employees) {
+            System.out.println("Employee ID: " + emp.id);
+            System.out.println("Name: " + emp.name);
+            System.out.println("Attendance Count: " + emp.attendance.size());
+
+            if (emp.attendance.isEmpty()) {
+                System.out.println("No attendance records.");
+            } else {
+                for (String date : emp.attendance) {
+                    System.out.println(" - " + date);
+                }
+            }
+            System.out.println("---------------------------");
+        }
+    }
+
+    // ================= FIND EMPLOYEE =================
+    static Employee findEmployeeById(int id) {
+        for (Employee emp : employees) {
+            if (emp.id == id) {
+                return emp;
+            }
+        }
+        return null;
+    }
+}
+
+
+database connection using sql 
+
+import java.sql.*;
+
+public class LeaveManagementSystem {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/employee_leave_db";
+        String user = "root";
+        String password = "YOUR_PASSWORD"; // Put your actual password here
+
+        try {
+            // Load Driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con = DriverManager.getConnection(url, user, password);
+            Statement stmt = con.createStatement();
+
+            System.out.println("--- ADMIN LIST ---");
+            ResultSet rsAdmin = stmt.executeQuery("SELECT * FROM admins");
+            while(rsAdmin.next()) System.out.println("Admin: " + rsAdmin.getString("username"));
+
+            System.out.println("\n--- EMPLOYEE LIST ---");
+            ResultSet rsEmp = stmt.executeQuery("SELECT * FROM employees");
+            while(rsEmp.next()) System.out.println("Emp: " + rsEmp.getString("name") + " (" + rsEmp.getString("department") + ")");
+
+            System.out.println("\n--- LEAVE TYPES ---");
+            ResultSet rsLeave = stmt.executeQuery("SELECT * FROM leave_types");
+            while(rsLeave.next()) System.out.println("Type: " + rsLeave.getString("leave_name"));
+
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
